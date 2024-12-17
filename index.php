@@ -57,16 +57,28 @@ function selectData($mysqli, $id) {
 function insertData($mysqli) {
     $data = json_decode(file_get_contents('php://input'), true);
     $name = $data['name'];
-    print_r($name);
 
     $sql = "INSERT INTO friends(name) VALUES ('$name')";
     $result = $mysqli->query($sql);
 
     if ($result) {
-        $data['id'] = $mysqli->insert_id; // Correct variable
-        echo json_encode($data);
+        $data['id'] = $mysqli->insert_id;
+
+        // Configuración para el correo
+        $to = "correo@ejemplo.com"; // Cambia por el correo destinatario
+        $subject = "Nuevo amigo agregado";
+        $message = "Se ha agregado un nuevo amigo con el nombre: $name y ID: " . $data['id'];
+        $headers = "From: no-reply@tu-dominio.com\r\n";
+        $headers .= "Content-Type: text/plain; charset=utf-8\r\n";
+
+        // Intentar enviar el correo
+        if (mail($to, $subject, $message, $headers)) {
+            echo json_encode(array('message' => 'Usuario creado y correo enviado', 'data' => $data));
+        } else {
+            echo json_encode(array('message' => 'Usuario creado, pero no se pudo enviar el correo', 'data' => $data));
+        }
     } else {
-        echo json_encode(array('error' => 'Error creating user'));
+        echo json_encode(array('error' => 'Error creando el usuario'));
     }
 }
 
