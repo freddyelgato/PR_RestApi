@@ -1,18 +1,18 @@
-version: '3.8'
 services:
-  
+
   db:
     image: mysql:8.0
     container_name: mysql-db
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword  
-      MYSQL_DATABASE: api_rest          
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: api_rest
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - mynetwork
 
-  
   php-apache:
     build: .
     container_name: php-apache
@@ -22,6 +22,12 @@ services:
       - db
     volumes:
       - .:/var/www/html
+    networks:
+      - mynetwork
 
 volumes:
   mysql_data:
+
+networks:
+  mynetwork:
+    driver: bridge
