@@ -6,7 +6,6 @@ $password = "";
 $database = "api_rest";
 $mysqli = new mysqli("db", "root", "rootpassword", "api_rest");
 
-
 if ($mysqli->connect_error) {
     die("Connection failed: " . $mysqli->connect_error);
 }
@@ -22,7 +21,11 @@ $id = ($path !== '/') ? end($searchId) : null;
 switch ($method) {
     // Select
     case 'GET':
-        selectData($mysqli, $id);
+        if ($path === '/region') {
+            getInstanceRegion();
+        } else {
+            selectData($mysqli, $id);
+        }
         break;
     // Insert
     case 'POST':
@@ -37,8 +40,26 @@ switch ($method) {
         deleteData($mysqli, $id);
         break;
     default:
-        echo "Method not allowed";
+        echo json_encode(array("error" => "Method not allowed"));
         break;
+}
+
+function getInstanceRegion() {
+    $metadataUrl = "http://169.254.169.254/latest/meta-data/placement/region";
+
+    // Usar cURL para obtener la región
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $metadataUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $region = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        echo json_encode(array('error' => 'Error obteniendo la región: ' . curl_error($ch)));
+    } else {
+        echo json_encode(array('region' => $region));
+    }
+
+    curl_close($ch);
 }
 
 function selectData($mysqli, $id) {
@@ -65,13 +86,12 @@ function insertData($mysqli) {
         $data['id'] = $mysqli->insert_id;
 
         // Configuración para el correo
-        $to = "correo@ejemplo.com"; // Cambia por el correo destinatario
+        $to = "fimoreria@uce.edu.ec"; // Cambia por el correo destinatario
         $subject = "Nuevo amigo agregado";
         $message = "Se ha agregado un nuevo amigo con el nombre: $name y ID: " . $data['id'];
-        $headers = "From: no-reply@tu-dominio.com\r\n";
+        $headers = "From: fayaguana@uce.edu.ec\r\n";
         $headers .= "Content-Type: text/plain; charset=utf-8\r\n";
 
-        // Intentar enviar el correo
         if (mail($to, $subject, $message, $headers)) {
             echo json_encode(array('message' => 'Usuario creado y correo enviado', 'data' => $data));
         } else {
