@@ -4,7 +4,7 @@ $host = "db";
 $user = "root";
 $password = "";
 $database = "api_rest";
-$mysqli = new mysqli("localhost", "root", "rootpassword", "api_rest");
+$mysqli = new mysqli("db", "root", "rootpassword", "api_rest");
 
 
 if ($mysqli->connect_error) {
